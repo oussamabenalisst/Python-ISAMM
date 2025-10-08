@@ -13,10 +13,6 @@ with wave.open(nom_fichier, "w") as fichier_audio:
     fichier_audio.setparams(
         (nchannels, sampwith, framerate, nframes, comptype, compname)
     )
-    valeur = (
-        int(32767.0 * math.sin(2.0 * math.pi * 440.0 * i / float(framerate)))
-        for i in range(nframes)
-    )
     for i in range(nframes):
         valeur = int(32767.0 * math.sin(2.0 * math.pi * 440.0 * i / float(framerate)))
         fichier_audio.writeframes(struct.pack("<h", valeur))
