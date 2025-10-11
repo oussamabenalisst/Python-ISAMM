@@ -32,20 +32,21 @@
 ### Q7 : Quelles sont les étapes du cycle d’un Système Multimédia ?
 
 - Le cycle comprend l'Acquisition, la Numérisation et le traitement dans l’unité centrale, le Stockage, la Diffusion ou transmission, et la Restitution (rétablissement dans l’état).
-  III. Acteurs et Applications
-  Q : Qui sont les principaux acteurs technologiques du monde Multimédia (MM) ?
-  R :
+
+## III. Acteurs et Applications
+
+### Q8 : Qui sont les principaux acteurs technologiques du monde Multimédia (MM) ?
 
 1. Les Signaux multimédia (diversification de la présentation de l’information).
 2. Les Réseaux de télécommunications (où Internet est préféré au réseau téléphonique).
 3. L'Informatique (progrès fulgurants des micro-processeurs).
 4. La Normalisation (création d'un "langage" commun et de standards).
 
-### Q8 : Quels sont les avantages du multimédia pour l'utilisateur ?
+### Q9 : Quels sont les avantages du multimédia pour l'utilisateur ?
 
 - Le multimédia offre la facilité d'utilisation (interface souple), l'indépendance de l'utilisateur (parcours personnalisé), l'interactivité (personnalisation des messages), et l'aspect ludique (animation, jeu).
 
-### Q9 : Quels sont les principaux domaines d'application du Multimédia ?
+### Q10 : Quels sont les principaux domaines d'application du Multimédia ?
 
 - Formation - Enseignement.
 - Business et Publicité.
@@ -55,18 +56,18 @@
 
 ### IV. Outils Logiciels
 
-### Q10 : Citez des exemples de logiciels d'édition graphique/image.
+### Q11 : Citez des exemples de logiciels d'édition graphique/image.
 
 - Adobe Illustrator, Adobe Photoshop (standard dans le graphisme), et Macromedia Freehand.
 
-### Q11 : Citez des exemples de logiciels d'édition audio digitale.
+### Q12 : Citez des exemples de logiciels d'édition audio digitale.
 
 - Cool Edit, Sound Forge, Pro Tools (environnement évolué pour la production audio), et Macromedia Soundedit.
 
-### Q12 : Citez des exemples de logiciels d'édition vidéo.
+### Q13 : Citez des exemples de logiciels d'édition vidéo.
 
 - Adobe Premiere (outil simple et intuitif) et Adobe After Effects (outil puissant de conception vidéo).
 
-### Q13 : Citez des exemples d'outils de Rendering (rendu) 3D.
+### Q14 : Citez des exemples d'outils de Rendering (rendu) 3D.
 
 - 3D Studio Max, Softimage et Maya.
