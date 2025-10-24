@@ -1,168 +1,136 @@
 # Référence des fonctions matplotlib.pyplot
 
-Ce document explique les fonctions de `matplotlib.pyplot` employées dans `son.ipynb` : usage, arguments importants, retours et exemples courts.
+Ce document donne une référence concise et orientée « signatures » pour les fonctions de `matplotlib.pyplot` couramment utilisées dans `son.ipynb`.
 
 ---
 
-## plt.plot(x, y, fmt=None, \*\*kwargs)
+## Table des matières
 
-- But : tracer une courbe (ligne) reliant les points (x, y).
-- Arguments importants :
-  - `x`, `y` : arrays (ou scalars broadcastables).
-  - `fmt` (optionnel) : chaîne de format (ex. `'r--'`, `'ok'`, `'-'`, `'.'`).
-  - `color`, `linestyle`, `marker`, `linewidth`, `alpha`, `label`.
-- Valeur de retour : liste d'objets `Line2D`.
-- Remarques :
-  - Par défaut relie les points par des segments droits.
-  - Pour tracer uniquement des points densément, `plt.plot(x, y, '.')` est souvent plus rapide que `plt.scatter`.
-- Exemple :
-  ```python
-  plt.plot(t, x, '--', color='C0', linewidth=1, label='Signal réel')
-  ```
+- `plt.plot`
+- `plt.scatter`
+- `plt.grid`
+- `plt.xlabel` / `plt.ylabel`
+- `plt.title`
+- `plt.legend`
+- `plt.xlim` / `plt.ylim`
+- `plt.show`
+- `plt.figure` / `plt.subplots`
+- `plt.colorbar`
 
 ---
 
-## plt.scatter(x, y, \*\*kwargs)
+## plt.plot(x, y=None, fmt='', \*\*kwargs)
 
-- But : diagramme de dispersion — chaque point indépendant, adapté pour colorer/taille par point.
-- Arguments clés :
-  - `s` : taille en area (points²), ex. `s=20`.
-  - `c` : couleur (nom, code, ou tableau numérique pour colormap).
-  - `cmap` : colormap si `c` est numérique, ex. `'viridis'`.
+- Signature simplifiée : `plot(*args, **kwargs)` — l'appel peut être : `plot(x, y, fmt, **kwargs)` ou `plot(y)`.
+- Paramètres importants :
+  - `x`, `y` : array-like. Si seul `y` est fourni, `x` est implicite `range(len(y))`.
+  - `fmt` : chaîne de format pour couleur/linestyle/marker (ex. `'r--'`).
+  - `color`, `linestyle`, `marker`, `linewidth`, `markersize`, `alpha`, `label`.
+  - `drawstyle` : `'default'`, `'steps'`, etc.
+- Retour : liste d'objets `Line2D`.
+- Remarques : relie par défaut les points par segments ; `out` n'existe pas (utiliser `Line2D` pour modifications avancées).
+
+---
+
+## plt.scatter(x, y, s=None, c=None, cmap=None, marker=None, norm=None, vmin=None, vmax=None, \*\*kwargs)
+
+- Paramètres clés :
+  - `x`, `y` : coordonnées (array-like).
+  - `s` : taille (float ou array-like) en points^2.
+  - `c` : couleur ou valeurs numériques (array-like) mappées via `cmap`.
+  - `cmap` : colormap si `c` est numérique.
   - `marker`, `alpha`, `edgecolors`, `linewidths`.
-- Valeur de retour : `PathCollection`.
-- Remarques :
-  - Permet carte de couleurs et échelle (`plt.colorbar()`).
-  - Moins performant pour très grand nombre de points que `plt.plot(..., '.')`.
-- Exemple :
-  ```python
-  plt.scatter(te, x_e, color='orange', label='Signal échantillonné', s=25, alpha=0.9)
-  ```
+- Retour : `PathCollection`.
+- Remarques : adapté pour color/taille par point ; coûteux pour très grands jeux de points.
 
 ---
 
 ## plt.grid(b=True, which='major', axis='both', \*\*kwargs)
 
-- But : afficher ou masquer la grille sur la figure.
-- Arguments utiles :
-  - `b` : True/False pour activer/désactiver.
-  - `which` : `'major'` / `'minor'` / `'both'`.
-  - `axis` : `'both'` / `'x'` / `'y'`.
-  - `linestyle`, `color`, `linewidth`, `alpha` possibles.
-- Exemple :
-  ```python
-  plt.grid(True, linestyle='--', alpha=0.5)
-  ```
+- Paramètres :
+  - `b` : bool ou None (toggle).
+  - `which` : `'major'`, `'minor'`, `'both'`.
+  - `axis` : `'both'`, `'x'`, `'y'`.
+  - `linestyle`, `color`, `linewidth`, `alpha` transmis aux lignes de grille.
+- Retour : None (modifie l'axe courant).
 
 ---
 
-## plt.xlabel(label, **kwargs) / plt.ylabel(label, **kwargs)
+## plt.xlabel(s, **kwargs) / plt.ylabel(s, **kwargs)
 
-- But : définir l'étiquette de l'axe x / y.
-- Arguments fréquents : `fontsize`, `labelpad`, `fontdict`.
-- Exemple :
-  ```python
-  plt.xlabel("Temps (s)", fontsize=12)
-  plt.ylabel("Amplitude", fontsize=12)
-  ```
+- Paramètres :
+  - `s` : chaîne (label).
+  - `fontdict`, `labelpad`, `fontsize`, `color` parmi autres.
+- Retour : `Text` (objet texte créé).
 
 ---
 
-## plt.title(label, \*\*kwargs)
+## plt.title(s, \*\*kwargs)
 
-- But : ajouter un titre à la figure.
-- Arguments utiles : `fontsize`, `loc` (`'left'|'center'|'right'`), `pad`.
-- Exemple :
-  ```python
-  plt.title("Signal cosinus", fontsize=14)
-  ```
+- Paramètres :
+  - `s` : chaîne du titre.
+  - `loc` : `'left'|'center'|'right'`.
+  - `pad`, `fontsize`, `fontdict`.
+- Retour : `Text`.
 
 ---
 
 ## plt.legend(\*\*kwargs)
 
-- But : afficher la légende (à partir de `label=` dans `plot`/`scatter`).
-- Arguments courants :
-  - `loc` : position (`'upper right'`, `'best'`, tuple, etc.).
+- Paramètres courants :
+  - `loc` : position (string ou tuple), ex. `'best'`, `'upper right'`.
   - `ncol`, `frameon`, `fontsize`, `title`, `bbox_to_anchor`.
-- Exemple :
-  ```python
-  plt.legend(loc='upper right')
-  ```
+- Retour : `Legend` (objet).
 
 ---
 
-## plt.xlim(left, right) / plt.ylim(bottom, top)
+## plt.xlim(left=None, right=None) / plt.ylim(bottom=None, top=None)
 
-- But : fixer (ou lire) les limites d'un axe.
 - Usage :
-  - Pour fixer : `plt.xlim(0, 6000)`.
-  - Pour lire : `xmin, xmax = plt.xlim()`.
-- Remarque : utile pour zoomer sur une plage de fréquences/temporelle.
+  - `plt.xlim( xmin, xmax )` fixe les limites ; sans arguments retourne `(xmin, xmax)`.
+  - `plt.ylim( bottom, top )` analogue.
+- Retour : tuple de limites si appel en lecture.
 
 ---
 
 ## plt.show(block=None)
 
-- But : afficher la/les figure(s) à l'écran.
-- Notes :
-  - Dans Jupyter, l'affichage est souvent automatique ; `plt.show()` force l'affichage et termine la figure courante.
-  - `block` contrôlé dans scripts (bloquant/non-bloquant).
-- Exemple :
-  ```python
-  plt.show()
-  ```
+- Paramètres :
+  - `block` : bool ou None. Contrôle le blocage dans les scripts (Jupyter gère l'affichage automatiquement).
+- Retour : None (affiche les figures et, selon le backend, peut bloquer).
 
 ---
 
-## plt.figure(**kwargs) et plt.subplots(nrows=1, ncols=1, **kwargs)
+## plt.figure(**kwargs) / plt.subplots(nrows=1, ncols=1, **kwargs)
 
-- But : créer explicitement une figure (`plt.figure`) ou une figure+axes (`plt.subplots`) — meilleure pratique pour contrôle fin.
-- Arguments utiles :
-  - `figsize=(w,h)` en pouces, `dpi`.
-  - Pour `subplots` : renvoie `(fig, ax)` ; on peut appeler `ax.plot(...)`, `ax.set_xlabel(...)`, `ax.grid(...)`.
-- Avantage : API orientée-objet (réglages par ax) meilleure pour figures multiples ou exports.
-- Exemple :
-  ```python
-  fig, ax = plt.subplots(figsize=(8,4))
-  ax.plot(t, x)
-  ax.set_xlabel("Temps (s)")
-  ax.grid(True)
-  ```
+- `plt.figure(**kwargs)` : crée une nouvelle figure.
+  - arguments clés : `figsize=(w,h)`, `dpi`, `facecolor`, `edgecolor`.
+- `plt.subplots(nrows=1, ncols=1, **kwargs)` : crée figure et axes.
+  - Retour : `(fig, ax)` ou `(fig, axs)` selon `nrows/ncols`.
+  - `sharex`, `sharey`, `gridspec_kw` sont des options fréquentes.
 
 ---
 
-## plt.colorbar(mappable, \*\*kwargs)
+## plt.colorbar(mappable=None, \*\*kwargs)
 
-- But : afficher une échelle des couleurs associée à un scatter ou image.
-- Usage : `sc = plt.scatter(x, y, c=vals, cmap='viridis'); plt.colorbar(sc)`
-- Arguments : `orientation`, `label`, `shrink`, `pad`.
-
----
-
-## Conseils pratiques et bonnes pratiques
-
-- Pour des signaux échantillonnés, utiliser `plt.plot(t, x, '.', markersize=...)` ou `plt.scatter` selon besoin de colormap.
-- Pour publications, régler `plt.figure(figsize=(w,h), dpi=300)` et `ax.tick_params`.
-- Préférer l'API orientée-objet (`fig, ax = plt.subplots()`) quand on manipule plusieurs axes ou veut réutiliser la figure.
-- Pour grosses séries de points : `plt.plot(..., '.')` est plus performant que `plt.scatter`.
-- Toujours ajouter `label=` et `plt.legend()` si plusieurs courbes doivent être distinguées.
-- Pour gérer l'affichage du texte mathématique, utiliser des raw-strings LaTeX : `r"$x(t)$"`.
+- Paramètres :
+  - `mappable` : objet issu d'un `ScalarMappable` (ex. `PathCollection` retourné par `scatter` ou `AxesImage`).
+  - `orientation` : `'vertical'` (par défaut) ou `'horizontal'`.
+  - `shrink`, `pad`, `aspect`, `label`.
+- Retour : `Colorbar`.
 
 ---
 
-## Exemples courts rassemblés
+## Conseils synthétiques
 
-```python
-import matplotlib.pyplot as plt
-fig, ax = plt.subplots(figsize=(8,4))
-ax.plot(t_dense, x_dense, '--', label='Signal réel', color='C0')
-ax.scatter(te, x_e, color='orange', s=30, label='Échantillons')
-ax.set_xlabel("Temps (s)")
-ax.set_ylabel("Amplitude")
-ax.set_title("Échantillonnage d'un signal")
-ax.grid(True, linestyle='--', alpha=0.5)
-ax.legend(loc='upper right')
-plt.xlim(0, 1)
-plt.show()
-```
+- Préférer l'API orientée-objet (`fig, ax = plt.subplots()`) pour un contrôle fin.
+- Pour de gros nuages de points, `plt.plot(x, y, '.')` peut être plus rapide que `scatter` si la coloration individuelle n'est pas nécessaire.
+- Toujours préciser `label=` aux tracés et appeler `ax.legend()` ou `plt.legend()` quand plusieurs courbes existent.
+- Pour export en haute qualité : `fig.savefig(..., dpi=300, bbox_inches='tight')`.
+
+---
+
+Fichier : `python/tr1/Function_Reference/matplotlib.pyplot.md` — version signaturée et centrée sur les paramètres. Si vous voulez que j'ajoute :
+
+- courtes notes sur les types d'objets retournés (`Line2D`, `PathCollection`, `Text`, `Legend`, `Colorbar`),
+- ou une version condensée en arabe, je peux l'ajouter.
