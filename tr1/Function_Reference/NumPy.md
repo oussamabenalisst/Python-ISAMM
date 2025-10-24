@@ -1,5 +1,9 @@
 # Référence et analyse des fonctions NumPy utilisées
 
+Ce document fournit une explication détaillée (en français) des fonctions NumPy employées dans les notebooks `son.ipynb` et `TP1_NumPy.ipynb`. Pour chaque fonction ou motif d'utilisation, vous trouverez : le rôle, les arguments importants, un exemple tiré des scripts, et des conseils pratiques.
+
+---
+
 ## Table des matières
 
 - Création et conversion de tableaux : `np.array`, `astype`
