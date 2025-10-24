@@ -1,209 +1,226 @@
-# Référence et analyse des fonctions NumPy utilisées
+# Référence des fonctions NumPy (signatures et paramètres)
 
-Ce document fournit une explication détaillée (en français) des fonctions NumPy employées dans les notebooks `son.ipynb` et `TP1_NumPy.ipynb`. Pour chaque fonction ou motif d'utilisation, vous trouverez : le rôle, les arguments importants, un exemple tiré des scripts, et des conseils pratiques.
+Ce document fournit, en français, les signatures, paramètres importants, valeurs de retour et remarques pour les fonctions NumPy demandées. L'objectif est une référence technique (pas d'exemples applicatifs détaillés).
 
 ---
 
 ## Table des matières
 
-- Création et conversion de tableaux : `np.array`, `astype`
+- Création et conversion de tableaux : `np.array`, `ndarray.astype`
 - Vecteurs temps et échantillonnage : `np.arange`, `np.linspace`, `np.pi`
-- Opérations élémentaires et fonctions mathématiques : `np.sin`, `np.cos`, `np.exp`, `np.abs`
+- Opérations élémentaires (ufuncs) : `np.sin`, `np.cos`, `np.exp`, `np.abs`
 - Statistiques et agrégations : `np.sum`, `np.mean`, `np.std`, `np.var`, `np.min`, `np.max`, `np.argmin`, `np.argmax`
-- Manipulation d'axes et produit matriciel : `.T`, `dot`
+- Manipulation d'axes et produit matriciel : `.T`, `np.dot`
 - Indexation, slicing et Boolean indexing
 - Masquage : `numpy.ma.masked_array`
 - Gestion des NaN : `np.isnan`, `np.nanmean`
 - Génération aléatoire : `np.random.randn`
-- Broadcasting
-- Transformée de Fourier (FFT) : `np.fft.fft`, `np.fft.fftfreq` et `np.fft.rfft` (remarque)
+- Broadcasting (règles)
+- Transformée de Fourier (FFT) : `np.fft.fft`, `np.fft.fftfreq`, `np.fft.rfft`
 
 ---
 
 ## Création et conversion de tableaux
 
-- np.array(obj, dtype=None)
-  - Rôle : créer un tableau NumPy à partir d'une liste, liste de listes, etc.
-  - Exemples des scripts :
+- np.array(object, dtype=None, copy=True, order='K', subok=False, ndmin=0)
 
-```python
-A = np.array([[1,2,3],[4,5,6],[7,8,9]])
-```
+  - object : iterable (liste, tuple, nested lists) ou autre array-like.
+  - dtype : type souhaité (ex. `float`, `np.int16`, `np.complex64`). Si None, NumPy infère.
+  - copy : bool, si True force la copie.
+  - order : `'C'`, `'F'`, `'A'`, `'K'` (préférence d'ordre mémoire).
+  - subok : si True et object est un ndarray sub-classé, on retourne la sous-classe.
+  - ndmin : force un nombre minimal de dimensions.
+  - Retour : un `ndarray` avec attributs `shape`, `dtype`, `strides`, `ndim`.
 
-- Conseils : préciser dtype si nécessaire (ex. `np.array(..., dtype=float)`) pour éviter les conversions implicites.
-
-- array.astype(dtype)
-  - Rôle : convertir le type d'un tableau (ex. int16 -> float) avant calculs/FFT.
-  - Exemple conseillé : `x = x.astype(float)` avant `np.fft` si `x` est entier.
+- ndarray.astype(dtype, order='K', casting='unsafe', subok=False, copy=True)
+  - dtype : type cible (ex. `np.float64`).
+  - order, casting, subok, copy : contrôlent le comportement de conversion.
+  - Retour : un nouveau tableau (ou la même instance si conversion non nécessaire et `copy=False`).
 
 ---
 
 ## Vecteurs temps et échantillonnage
 
-- np.arange(start, stop, step)
-  - Rôle : génère une séquence start + n\*step tant que la valeur est < stop (stop exclu).
-  - Usage dans `son.ipynb` :
+- np.arange([start,] stop[, step,], dtype=None)
 
-```python
-fs = 44100
-Ts = 1 / fs
-t = np.arange(0, 2, Ts)  # échantillons de 0 à (presque) 2s
-```
+  - start, stop, step : comme en Python, `step` peut être float.
+  - dtype : type du résultat (optionnel).
+  - Remarque : en floats, des erreurs d'arrondi rendent `arange` moins adapté quand on veut un nombre précis d'échantillons.
 
-- Piège : pour les floats, la borne supérieure peut ne pas être exactement incluse à cause des erreurs d'arrondi. Si vous voulez un nombre précis d'échantillons, préférez `np.linspace`.
+- np.linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None)
 
-- np.linspace(start, stop, num, endpoint=True/False)
-  - Rôle : génère exactement `num` valeurs uniformes entre `start` et `stop`. `endpoint=False` exclut la dernière valeur.
-  - Exemples :
-
-```python
-t = np.linspace(0, 2, int(2*fs), endpoint=False)  # exactement 2*fs échantillons
-te = np.linspace(0, Durée, N)  # utilisé pour construire les instants d'échantillonnage
-```
+  - start, stop : bornes.
+  - num : nombre entier d'échantillons (précis).
+  - endpoint : inclure `stop` si True.
+  - retstep : renvoyer aussi le pas réel.
+  - dtype : type du résultat.
 
 - np.pi
-  - Constante π; utilisée dans toutes les formules trigonométriques : `2*np.pi*f*t`.
+  - Constante scalaire représentant π (float).
 
 ---
 
-## Opérations élémentaires et fonctions mathématiques
+## Opérations élémentaires (ufuncs)
 
-- np.sin(x), np.cos(x), np.exp(x), np.abs(x)
-  - Rôle : fonctions mathématiques élémentaires vectorisées. Elles acceptent scalaires ou tableaux et retournent un tableau de même forme.
-  - Exemples tirés des notebooks :
+Les ufuncs sont des fonctions vectorisées (implémentées en C). Elles acceptent en général :
 
-```python
-x = 0.5 * np.cos(2 * np.pi * 500 * t + np.pi/2)
-def x(t):
-    return np.sin(2*np.pi*t)
-y = np.exp(A)
-```
+- x (array_like) : entrée
+- out (optionnel) : tableau de sortie
+- where (optionnel) : masque booléen
 
-- Rappel : les fonctions trigonométriques attendent des angles en radians. Pour des degrés, utiliser `np.deg2rad()`.
+- np.sin(x, /, out=None, where=True, \*\*kwargs)
+- np.cos(x, /, out=None, where=True, \*\*kwargs)
+- np.exp(x, /, out=None, where=True, \*\*kwargs)
+- np.abs(x, /, out=None, where=True, \*\*kwargs)
+  - x : array-like (float ou complex selon l'ufunc).
+  - out : optionnel, écrire le résultat dans un tableau préalloué.
+  - where : masque boolean pour appliquer l'opération partiellement.
+  - Retour : ndarray de la même forme que `x`.
+
+Remarque : ufuncs supportent le broadcasting et sont optimisées pour éviter les boucles Python.
 
 ---
 
 ## Statistiques et agrégations
 
-- np.sum, np.mean, np.std, np.var, np.min, np.max
-  - Rôle : calculs d'agrégats sur un tableau. Acceptent un argument `axis` pour réduire selon une dimension.
-  - Exemples :
+- np.sum(a, axis=None, dtype=None, out=None, keepdims=False)
+- np.mean(a, axis=None, dtype=None, out=None, keepdims=False)
+- np.std(a, axis=None, dtype=None, out=None, ddof=0, keepdims=False)
+- np.var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=False)
+- np.min(a, axis=None, out=None, keepdims=False)
+- np.max(a, axis=None, out=None, keepdims=False)
+- np.argmin(a, axis=None)
+- np.argmax(a, axis=None)
 
-```python
-total = A.sum()
-col_sum = A.sum(axis=0)
-row_mean = A.mean(axis=1)
-stdev = A.std()
-```
+Paramètres communs :
 
-- np.argmin, np.argmax
+- a : array_like d'entrée.
+- axis : int ou tuple d'int, dimension(s) sur lesquelles réduire.
+- dtype : type du résultat (utile pour accumulation pour éviter overflow).
+- out : emplacement pour écrire le résultat (gain mémoire).
+- keepdims : conserve les axes réduites (taille 1) pour la compatibilité d'axes.
+- ddof : degrés de liberté (pour variance/écart-type).
 
-  - Rôle : index du minimum / maximum. Avec `axis` on peut obtenir indices selon une dimension.
-  - Exemples : `A.argmin()`, `A.argmax(axis=1)`
-
-- np.corrcoef
-  - Rôle : matrice de corrélation. Exemple : `np.corrcoef(A)`.
+Retour : scalaire ou ndarray réduit selon `axis`.
 
 ---
 
 ## Manipulation d'axes et produit matriciel
 
-- `.T` (transpose)
+- `.T` / `ndarray.transpose(*axes)`
 
-  - Exemple : `A2.T` retourne la matrice transposée.
+  - `.T` : raccourci pour `transpose()` qui inverse l'ordre des axes.
+  - `transpose(*axes)` : permute les axes selon l'ordre fourni.
+  - Ceci renvoie souvent une vue (pas de copie) ; vérifier `arr.flags['C_CONTIGUOUS']`/`strides` si une copie est créée.
 
-- dot / np.dot
-  - Rôle : produit matriciel. Exemple : `A2.dot(B2)` ou `np.dot(A2, B2)`.
+- np.dot(a, b) / a.dot(b)
+  - a, b : array_like. Comportement dépend des dimensions :
+    - 1-D \* 1-D -> produit scalaire.
+    - 2-D \* 2-D -> produit matriciel.
+    - N-D : somme sur dernières dimensions compatibles.
+  - Retour : ndarray résultant de la multiplication.
+  - Note : l'opérateur `@` réalise la multiplication matricielle et est équivalent pour 2-D.
 
 ---
 
 ## Indexation, slicing et Boolean indexing
 
-- Slicing : `arr[start:stop:step]` et multi-dimension : `A[0:2, 1:3]`, `A[:,1]`
-  - Exemples dans TP1 :
+- Slicing standard : `arr[start:stop:step]` (vue si possible).
+- Indexation multi-dimensionnelle : `A[i, j]`, `A[:, 1:3]`.
+- Fancy indexing : `A[[0,2,5]]` retourne une copie (pas une vue).
+- Boolean indexing : `A[A < 5]` sélectionne éléments ; l'affectation `A[A < 5] = val` modifie l'original.
 
-```python
-A[0:2, 1:3]
-A[:, -1]
-A[:, 1:2]
-```
+Vue vs Copie :
 
-- Boolean indexing : `A[A < 5] = 10` remplace les éléments satisfaisant la condition.
-  - Exemple :
-
-```python
-A_bool = A.copy()
-A_bool[A_bool < 5] = 10
-```
-
-Conseil : les opérations de masquage/modification sont in-place sur la copie uniquement si vous faites `.copy()`.
+- Slices -> vues quand c'est possible (partage de mémoire via `strides`).
+- Fancy indexing et masques -> copies.
 
 ---
 
-## Masquage avec numpy.ma
+## Masquage : `numpy.ma.masked_array`
 
-- numpy.ma.masked_array(data, mask=...)
-  - Rôle : créer un tableau masqué pour ignorer certaines valeurs lors des calculs (somme, moyenne, etc.).
-  - Exemple :
+- numpy.ma.masked_array(data, mask=None, dtype=None, copy=True, fill_value=None)
+  - data : array-like source.
+  - mask : bool array-like ; True = valeur masquée.
+  - dtype, copy : même sémantique que pour ndarray.
+  - fill_value : valeur de remplissage pour affichage/écriture.
+  - Retour : `MaskedArray` qui surchage les opérations pour ignorer les éléments masqués.
 
-```python
-import numpy.ma as ma
-arr = np.array([1,2,3,4,5,6,7,8])
-ma_arr = ma.masked_array(arr, mask=[False,False,False,True,True,True,False,False])
-ma_arr.sum()  # somme en ignorant les valeurs masquées
-```
+Remarque : utile pour représenter des données manquantes tout en conservant des types non-float (ex. entiers).
 
 ---
 
 ## Gestion des NaN
 
-- np.isnan(x) : renvoie un masque booléen des NaN.
-- np.nanmean(x) : calcul de la moyenne en ignorant les NaN (idem pour `nanstd`, `nansum`, ...).
-- Remarque : remplacer les NaN par une valeur (ex. `x[np.isnan(x)] = 0.5`) si vous voulez poursuivre les calculs sans NaN.
+- np.isnan(x)
+
+  - x : array_like.
+  - Retour : mask booléen de même forme indiquant les NaN.
+
+- np.nanmean(a, axis=None, dtype=None, out=None, keepdims=False)
+  - Variante de mean qui ignore les NaN.
+  - Il existe `np.nansum`, `np.nanstd`, `np.nanvar` pour opérations analogues.
+
+Remarque : remplacer NaN (`a[np.isnan(a)] = valeur`) modifie l'array en place.
 
 ---
 
 ## Génération aléatoire
 
-- np.random.randn(m, n)
-  - Rôle : génère des échantillons depuis une loi normale standard (m x n).
-  - Exemple dans TP1 : `B = np.random.randn(5,5)` puis insertion de NaN et traitement.
+- np.random.randn(\*d0)
+  - Paramètres : dimensions positionnelles (ex. `np.random.randn(3,4)` pour shape=(3,4)).
+  - Retour : ndarray d'échantillons depuis une loi normale centrée réduite N(0,1).
+  - Remarque : pour un usage moderne et reproductible, préférer `rng = np.random.default_rng(seed)` puis `rng.standard_normal(size)`.
 
 ---
 
-## Broadcasting
+## Broadcasting (règles principales)
 
-- Rôle : mécanisme qui permet d'appliquer des opérations entre tableaux de formes différentes sans copie explicite si les dimensions sont compatibles.
-  - Exemple simple : `A + 2` ajoute 2 à toutes les entrées de `A`.
-  - Conseil : connaître les règles de broadcasting (une dimension de taille 1 peut être étendue pour correspondre à l'autre).
+1. Les formes sont alignées à droite.
+2. Deux dimensions sont compatibles si elles sont égales ou si l'une d'elles vaut 1.
+3. Si une dimension vaut 1, elle est étendue virtuellement pour correspondre à l'autre.
+
+Conséquence : opérations élément-par-élément entre arrays de formes (m,n) et (n,) sont possibles sans copie.
 
 ---
 
 ## Transformée de Fourier (FFT)
 
-- numpy.fft.fft(x) et numpy.fft.fftfreq(n, d)
-  - Rôle : calculer la transformée de Fourier discrète et le vecteur de fréquences associé.
-  - Exemple dans `son.ipynb` :
+- np.fft.fft(x, n=None, axis=-1, norm=None)
 
-```python
-from numpy.fft import fft, fftfreq
-X = fft(x)
-freq = fftfreq(x.size, d=1/rate)
-N = x.size
-X_abs = np.abs(X[:N//2]) * 2.0 / N
-freq_pos = freq[:N//2]
-```
+  - x : array_like (typ. float ou complex).
+  - n : int (longueur de la FFT). Si fourni, effectue zero-pad ou tronque.
+  - axis : axe le long duquel calculer la FFT.
+  - norm : normalisation (`None` ou `'ortho'`).
+  - Retour : ndarray complexe contenant les coefficients de la DFT.
 
-- Remarques pratiques :
-  - Si `x` est réel, on affiche seulement `[:N//2]` (fréquences positives).
-  - Pour signaux réels, `np.fft.rfft` et `np.fft.rfftfreq` sont plus efficients et évitent le slicing manuel.
-  - Avant la FFT, convertir `x` en float et envisager l'application d'une fenêtre (Hann/Hamming) pour réduire la fuite spectrale.
+- np.fft.fftfreq(n, d=1.0)
+
+  - n : nombre de points (int).
+  - d : intervalle d'échantillonnage (float), ex. 1/fs.
+  - Retour : vecteur de fréquences (positives et négatives) correspondant aux indices de la FFT.
+
+- np.fft.rfft(x, n=None, axis=-1, norm=None)
+  - Optimisée pour signaux réels ; retourne uniquement la partie non redondante (fréquences >= 0).
+  - Pour `x` réel de taille N, la sortie a taille `N//2 + 1`.
+
+Remarques :
+
+- Choisir `n` et appliquer une fenêtre modifie résolution/fréquence et leakage.
+- Attention au scaling (multiplication par 1/N) selon convention d'analyse.
 
 ---
 
-## Conseils généraux et bonnes pratiques
+## Notes de performance et bonnes pratiques
 
-- Toujours vérifier le dtype des tableaux (`arr.dtype`) surtout avant la FFT ou des divs.
-- Préférer `np.linspace(..., endpoint=False)` quand vous comptez un nombre fixe d'échantillons (audio), pour éviter des imprécisions d'arange.
-- Documenter `fs`, `Ts`, `N`, `t` dans vos scripts pour garder la cohérence des unités (Hz, s, échantillons).
-- Utiliser l'API orientée-objet de Matplotlib (`fig, ax = plt.subplots()`) conjointement avec NumPy pour des figures reproductibles.
+- Vérifier `arr.dtype` avant opérations numériques coûteuses (prévenir overflow, choisir float32 vs float64).
+- Minimiser les copies : utiliser vues, `out=` et `memmap` pour grands jeux de données.
+- Pour l'algèbre linéaire lourde, NumPy délègue à BLAS/LAPACK ; la configuration du runtime (mkl/openBLAS) impacte la vitesse.
+
+---
+
+Fichier : `python/tr1/Function_Reference/NumPy.md` — cette version fournit les signatures et paramètres demandés. Dites-moi si vous voulez :
+
+- ajouter un petit exemple minimal pour chaque entrée, ou
+- une traduction en arabe, ou
+- extraire cette documentation dans un PDF ou README plus concis.
